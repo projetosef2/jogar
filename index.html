@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Show do Milhão - Geometria</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0e0e52;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1f1f72;
+            border-radius: 10px;
+        }
+        h1 {
+            font-size: 36px;
+        }
+        .question {
+            font-size: 24px;
+        }
+        .options {
+            margin-top: 20px;
+        }
+        .option {
+            background-color: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .option:hover {
+            background-color: #444;
+        }
+        .hidden {
+            display: none;
+        }
+        #result {
+            font-size: 30px;
+            margin-top: 20px;
+        }
+        .prize {
+            font-size: 28px;
+            margin-top: 20px;
+        }
+        #fireworks {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 9999;
+        }
+        .score {
+            font-size: 22px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Show do Milhão - Geometria</h1>
+        <div id="game">
+            <p id="score" class="score">Pontuação: R$ 0</p> <!-- Exibição da pontuação -->
+            <div id="question-container">
+                <p class="question" id="question"></p>
+                <div class="options">
+                    <div class="option" onclick="checkAnswer(0)"></div>
+                    <div class="option" onclick="checkAnswer(1)"></div>
+                    <div class="option" onclick="checkAnswer(2)"></div>
+                    <div class="option" onclick="checkAnswer(3)"></div>
+                </div>
+            </div>
+            <div id="result" class="hidden"></div>
+            <div class="prize" id="prize"></div>
+            <button id="restart-btn" onclick="startGame()" class="hidden">Recomeçar</button>
+        </div>
+    </div>
+
+    <div id="fireworks">
+        <!-- Aqui você pode colocar uma animação de fogos de artifício -->
+        <img src="https://www.gstatic.com/webp/gallery/1.jpg" alt="Fogos de Artifício" width="300px">
+    </div>
+
+    <!-- Som do Jogo -->
+    <audio id="correct-sound" src="acertou.mp3"></audio>
+    <audio id="wrong-sound" src="errou.mp3"></audio>
+    <audio id="next-phase-sound" src="fogos.mp3"></audio>
+    <audio id="game-start-sound" src="inicio.mp3"></audio>
+
+    <script>
+        const questions = [
+            { question: "Qual é a função da mediatriz de um segmento de reta?", options: [
+                "Criar um segmento paralelo a outro.",
+                "Dividir o segmento em duas partes iguais formando um ângulo de 90°.",
+                "Dividir o segmento sem formar ângulos.",
+                "Dividir o segmento em duas partes desiguais."
+            ], correctAnswer: 1, prize: 1000 },
+            { question: "Como é chamada a linha que divide um ângulo ao meio?", options: [
+                "Mediatriz",
+                "Bissetriz",
+                "Perpendicular",
+                "Tangente"
+            ], correctAnswer: 1, prize: 2000 },
+            { question: "Quantos graus tem um ângulo reto?", options: [
+                "180°",
+                "60°",
+                "90°",
+                "45°"
+            ], correctAnswer: 2, prize: 3000 },
+            { question: "Qual polígono regular tem três lados?", options: [
+                "Quadrado",
+                "Pentágono",
+                "Triângulo",
+                "Hexágono"
+            ], correctAnswer: 2, prize: 4000 },
+            { question: "O que caracteriza um ângulo agudo?", options: [
+                "Ser maior que 90°",
+                "Ser menor que 90°",
+                "Ser exatamente 90°",
+                "Ser maior que 180°"
+            ], correctAnswer: 1, prize: 5000 },
+            { question: "Qual é a soma dos ângulos internos de um triângulo?", options: [
+                "90°",
+                "180°",
+                "270°",
+                "360°"
+            ], correctAnswer: 1, prize: 10000 },
+            { question: "Quantos lados tem um pentágono?", options: [
+                "4",
+                "5",
+                "6",
+                "7"
+            ], correctAnswer: 1, prize: 20000 },
+            { question: "O que define um círculo?", options: [
+                "Uma linha reta",
+                "Um conjunto de pontos equidistantes de um centro",
+                "Um polígono regular",
+                "Uma linha curva fechada sem centro"
+            ], correctAnswer: 1, prize: 30000 },
+            { question: "Quantos graus tem um ângulo raso?", options: [
+                "90°",
+                "180°",
+                "270°",
+                "360°"
+            ], correctAnswer: 1, prize: 40000 },
+            { question: "Quantos lados tem um hexágono?", options: [
+                "5",
+                "6",
+                "7",
+                "8"
+            ], correctAnswer: 1, prize: 50000 },
+            { question: "Quantos lados tem um heptágono?", options: [
+                "6",
+                "7",
+                "8",
+                "9"
+            ], correctAnswer: 1, prize: 100000 },
+            { question: "Quantos lados tem um octógono?", options: [
+                "7",
+                "8",
+                "9",
+                "10"
+            ], correctAnswer: 1, prize: 200000 },
+            { question: "Quantos lados tem um eneágono?", options: [
+                "8",
+                "9",
+                "10",
+                "11"
+            ], correctAnswer: 1, prize: 300000 },
+            { question: "Quantos lados tem um decágono?", options: [
+                "9",
+                "10",
+                "11",
+                "12"
+            ], correctAnswer: 1, prize: 400000 },
+            { question: "Quantos lados tem um dodecágono?", options: [
+                "10",
+                "11",
+                "12",
+                "13"
+            ], correctAnswer: 2, prize: 1000000 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let gameOver = false;
+        let totalScore = 0;
+
+        function startGame() {
+            document.getElementById("game-start-sound").play();
+            document.getElementById("fireworks").style.display = "none"; // Hide fireworks
+            document.getElementById("restart-btn").classList.add("hidden");
+            gameOver = false;
+            totalScore = 0;
+            updateScore();
+            currentQuestionIndex = 0;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            if (gameOver) return;
+
+            const question = questions[currentQuestionIndex];
+            document.getElementById("question").innerText = question.question;
+
+            const options = document.querySelectorAll(".option");
+            options.forEach((option, index) => {
+                option.innerText = question.options[index];
+                option.classList.remove("hidden");
+            });
+
+            document.getElementById("result").classList.add("hidden");
+            document.getElementById("prize").innerText = "";
+        }
+
+        function updateScore() {
+            document.getElementById("score").innerText = `Pontuação: R$ ${totalScore}`;
+        }
+
+        function checkAnswer(selectedOption) {
+            const question = questions[currentQuestionIndex];
+            const correctAnswer = question.correctAnswer;
+            const prize = question.prize;
+
+            const correctSound = document.getElementById("correct-sound");
+            const wrongSound = document.getElementById("wrong-sound");
+
+            if (selectedOption === correctAnswer) {
+                correctSound.play();
+                totalScore += prize; // Adiciona o prêmio à pontuação
+                updateScore(); // Atualiza a pontuação
+                currentQuestionIndex++;
+                if (currentQuestionIndex === questions.length) {
+                    document.getElementById("result").innerText = "Você ganhou R$ 1.000.000!";
+                    document.getElementById("prize").innerText = "Parabéns! Você é um vencedor!";
+                    document.getElementById("fireworks").style.display = "block"; // Show fireworks
+                    gameOver = true;
+                } else {
+                    showQuestion();
+                }
+            } else {
+                wrongSound.play();
+                document.getElementById("result").innerText = "Você errou!";
+                document.getElementById("prize").innerText = "Fim de jogo!";
+                gameOver = true;
+                document.getElementById("restart-btn").classList.remove("hidden");
+            }
+        }
+
+        // Start the game when the page loads
+        window.onload = startGame;
+    </script>
+</body>
+</html>
